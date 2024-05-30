@@ -2,3 +2,8 @@
 task_results
 workflow_results
 
+# egg
+engine.egg-info
+chat.egg-info
+__pycache__
+
