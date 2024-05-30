@@ -7,7 +7,7 @@ logger = get_logger()
 load_dotenv()
 
 @workflow(name="multichat")
-def multichat(wf, prompt):
+def multichat(wf, prompt, job_id):
     logger.info("multichat")
     out1 = wf.add_task(chat_run, prompt)
     logger.info(out1)
@@ -21,7 +21,7 @@ def multichat(wf, prompt):
     return out2
 
 def main():
-    multichat(prompt="hello")
+    multichat(prompt="hello", job_id="123")
 
 if __name__ == "__main__":
     main()
