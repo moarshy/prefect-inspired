@@ -1,11 +1,11 @@
+import asyncio
 import functools
-import time
-import uuid
+import traceback
 from datetime import datetime
 from enum import Enum, auto
-import traceback
+import uuid
 
-from .utils import save_task_result
+from engine.db import save_task_result, save_workflow_result
 
 class TaskState(Enum):
     PENDING = auto()
@@ -67,7 +67,7 @@ class TaskResult:
 def task(max_retries=3, delay=1, id=None):
     def decorator(func):
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             task_result = TaskResult(func.__name__)
             input_data = args if args else kwargs
             task_result.start(input_data)
@@ -75,19 +75,19 @@ def task(max_retries=3, delay=1, id=None):
             for attempt in range(max_retries):
                 try:
                     # Execute the task
-                    result = func(*args, **kwargs)
+                    result = await func(*args, **kwargs)
                     
                     # Capture the output data and mark task as complete
                     task_result.complete(result)
-                    save_task_result(task_result)
+                    await save_task_result(task_result.to_dict())
                     return task_result, result
                 except Exception as e:
                     task_result.increment_retries()
                     task_result.fail(str(e))
-                    save_task_result(task_result)
+                    await save_task_result(task_result.to_dict())
                     traceback.print_exc()
                     if attempt < max_retries - 1:
-                        time.sleep(delay)  # Delay before retrying
+                        await asyncio.sleep(delay)  # Delay before retrying
                         task_result.state = TaskState.RUNNING
             return task_result, None
         return wrapper

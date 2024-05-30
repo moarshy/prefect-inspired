@@ -1,15 +1,27 @@
-# surrealdb_client.py
 from surrealdb import Surreal
-import asyncio
 
-DB_URL = "http://localhost:8000/rpc"
-DB_NAMESPACE = "namespace"
-DB_DATABASE = "database"
-DB_USERNAME = "username"
-DB_PASSWORD = "password"
 
-async def get_db():
-    db = Surreal(DB_URL)
-    await db.signin({"user": DB_USERNAME, "pass": DB_PASSWORD})
-    await db.use(DB_NAMESPACE, DB_DATABASE)
-    return db
+async def save_task_result(task_result):
+    async with Surreal("ws://localhost:8000/rpc") as db:
+            await db.signin({"user": "root", "pass": "root"})
+            await db.use("test", "test")
+            await db.create(f'task_results:{task_result["id"]}', task_result)
+
+async def save_workflow_result(workflow_result):
+    async with Surreal("ws://localhost:8000/rpc") as db:
+        await db.signin({"user": "root", "pass": "root"})
+        await db.use("test", "test")    
+        await db.create(f'workflow_results:{workflow_result["job_id"]}', workflow_result)
+
+async def create_workflow_status(job_id, status):
+    async with Surreal("ws://localhost:8000/rpc") as db:
+        await db.signin({"user": "root", "pass": "root"})
+        await db.use("test", "test")
+        await db.create(f'workflow_status:{job_id}', {"status": status})
+
+async def update_workflow_status(job_id, status):
+    print(job_id, status)
+    async with Surreal("ws://localhost:8000/rpc") as db:
+        await db.signin({"user": "root", "pass": "root"})
+        await db.use("test", "test")
+        await db.update(f'workflow_status:{job_id}', {"status": status})

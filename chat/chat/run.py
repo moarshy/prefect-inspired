@@ -4,9 +4,8 @@ from engine.utils import get_logger
 
 logger = get_logger()
 
-
 @task()
-def run(prompt):
+async def run(prompt):
     client = openai.OpenAI()
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
@@ -18,9 +17,8 @@ def run(prompt):
         messages=messages,
         temperature=0.0,
     )
-    response = response.choices[0].message.content
+    response_content = response.choices[0].message.content
 
     return {
-        "response": response,
+        "response": response_content,
     }
-
